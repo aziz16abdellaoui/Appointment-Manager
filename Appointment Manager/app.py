@@ -23,16 +23,14 @@ class AppointmentManager:
 
         self.name_var = tk.StringVar()
         self.contact_var = tk.StringVar()
-        self.date_var = tk.StringVar(value=datetime.now().strftime("%Y-%m-%d"))  # Default value is current date
-        self.time_var = tk.StringVar(value=datetime.now().strftime("%H:%M"))  # Default value is current time
+        self.date_var = tk.StringVar(value=datetime.now().strftime("%Y-%m-%d"))
+        self.time_var = tk.StringVar(value=datetime.now().strftime("%H:%M"))
 
-        # Database
         self.conn = sqlite3.connect("appointments.db")
         self.cursor = self.conn.cursor()
         self.cursor.execute("CREATE TABLE IF NOT EXISTS appointments (id INTEGER PRIMARY KEY, name TEXT, contact TEXT, date TEXT, time TEXT, user_type TEXT)")
         self.conn.commit()
 
-        # Ensure all required columns are added to the appointments table
         self.cursor.execute("PRAGMA table_info(appointments)")
         columns = self.cursor.fetchall()
         column_names = [column[1] for column in columns]
@@ -48,16 +46,13 @@ class AppointmentManager:
             self.cursor.execute("ALTER TABLE appointments ADD COLUMN user_type TEXT")
         self.conn.commit()
 
-        # Title
         title_label = tk.Label(root, text=title_text, font=("Helvetica", 24), bg="#333", fg="#FFF", padx=10, pady=5)
         title_label.pack(fill="x")
 
         if user_type == "Patient":
-            # Add appointment frame
             add_frame = ttk.Frame(root, padding=20)
             add_frame.pack(pady=20)
 
-            # Labels and Entries for adding appointments
             ttk.Label(add_frame, text="Name:", font=("Helvetica", 12)).grid(row=0, column=0, sticky="w", pady=5)
             ttk.Entry(add_frame, textvariable=self.name_var, font=("Helvetica", 12)).grid(row=0, column=1, padx=10)
             ttk.Label(add_frame, text="Contact:", font=("Helvetica", 12)).grid(row=1, column=0, sticky="w", pady=5)
@@ -69,17 +64,14 @@ class AppointmentManager:
 
             ttk.Button(add_frame, text="Make Appointment", command=self.make_appointment).grid(row=4, column=0, columnspan=2, pady=10)
 
-            # Add cancel appointment button
             ttk.Button(root, text="Cancel Appointment", command=self.cancel_appointment).pack()
 
-        # Buttons for exit
         action_buttons = ttk.Frame(root)
         action_buttons.pack()
         if user_type == "Doctor":
             ttk.Button(action_buttons, text="Delete Appointment", command=self.delete_appointment).pack(side="left", padx=10)
         ttk.Button(action_buttons, text="Exit", command=self.exit_program).pack(side="right", padx=10)
 
-        # Appointments treeview
         self.appointments_tree = ttk.Treeview(root, columns=("Index", "Name", "Contact", "Date", "Time"), show="headings", height=15)
         self.appointments_tree.pack(pady=20)
         self.appointments_tree.heading("Index", text="Index")
@@ -87,13 +79,11 @@ class AppointmentManager:
         self.appointments_tree.heading("Contact", text="Contact")
         self.appointments_tree.heading("Date", text="Date")
         self.appointments_tree.heading("Time", text="Time")
-        self.appointments_tree.column("#0", width=0, stretch=tk.NO)  # Hide index column
+        self.appointments_tree.column("#0", width=0, stretch=tk.NO)
 
-        # Supportive quote from doctor
         supportive_quote_label = ttk.Label(root, text=self.get_supportive_quote(), font=("Helvetica", 12), wraplength=600)
         supportive_quote_label.pack(pady=10)
 
-        # Load existing appointments
         self.load_appointments()
 
     def make_appointment(self):
@@ -105,7 +95,7 @@ class AppointmentManager:
         if name and contact and date and time:
             self.cursor.execute("INSERT INTO appointments (name, contact, date, time, user_type) VALUES (?, ?, ?, ?, ?)", (name, contact, date, time, self.user_type))
             self.conn.commit()
-            self.load_appointments()  # Reload appointments after adding a new one
+            self.load_appointments()
             self.clear_entries()
         else:
             messagebox.showerror("Error", "Please fill all fields.")
@@ -126,8 +116,8 @@ class AppointmentManager:
     def clear_entries(self):
         self.name_var.set("")
         self.contact_var.set("")
-        self.date_var.set(datetime.now().strftime("%Y-%m-%d"))  # Reset date entry field to current date
-        self.time_var.set(datetime.now().strftime("%H:%M"))  # Reset time entry field to current time
+        self.date_var.set(datetime.now().strftime("%Y-%m-%d"))
+        self.time_var.set(datetime.now().strftime("%H:%M"))
 
     def cancel_appointment(self):
         selected_item = self.appointments_tree.selection()
@@ -175,7 +165,7 @@ class LoginWindow:
 
         self.username_var = tk.StringVar()
         self.password_var = tk.StringVar()
-        self.user_type_var = tk.StringVar(value="Patient")  # Default user type is Patient
+        self.user_type_var = tk.StringVar(value="Patient")
 
         login_frame = ttk.Frame(root, padding=20)
         login_frame.pack()
@@ -220,7 +210,7 @@ class LoginWindow:
             messagebox.showerror("Error", "Please enter both username and password.")
 
     def signup(self):
-        self.root.destroy()  # Close login window before opening signup window
+        self.root.destroy()
         signup_window = tk.Tk()
         signup_app = SignupWindow(signup_window)
         signup_window.mainloop()
@@ -269,7 +259,7 @@ class SignupWindow:
                 self.cursor.execute("INSERT INTO users (username, password, user_type) VALUES (?, ?, ?)", (username, password, user_type))
                 self.conn.commit()
                 messagebox.showinfo("Success", "Account created successfully!")
-                self.root.destroy() 
+                self.root.destroy()
                 login_window = tk.Tk()
                 login_app = LoginWindow(login_window)
                 login_window.mainloop()
